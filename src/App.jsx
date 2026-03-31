@@ -47,7 +47,7 @@ export default function App() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
  
-  const handleSend = (text) => {
+  const handleSend = async (text) => {
     const msg = text || input.trim();
     if (!msg) return;
  
@@ -58,16 +58,33 @@ export default function App() {
     setInput("");
     setIsTyping(true);
  
-    setTimeout(() => {
+    try {
+      const res = await fetch("http://localhost:3001/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg }),
+      });
+       const data = await res.json();
+
       setMessages((prev) =>
         prev.map((m) =>
           m.id === typingMsg.id
-            ? { ...m, text: "ответа пока нет)" }
+            ? { ...m, text: data.content }
+            : m
+        )
+      );
+    
+  }   catch (error) {
+      console.error("Error sending message:", error);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === typingMsg.id
+            ? { ...m, text: "Ошибка при получении ответа" }
             : m
         )
       );
       setIsTyping(false);
-    }, 2000);
+    }
   };
  
   const handleKeyDown = (e) => {
@@ -126,7 +143,7 @@ export default function App() {
             <span /><span /><span />
           </button>
           <h1 className="chat-title">AI Chat UI project</h1>
-          <div className="model-badge">share<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v8.5M15 7l-3-3l-3 3m-4 5v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></div>
+          <div className="model-badge">share<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v8.5M15 7l-3-3l-3 3m-4 5v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></div>
         </header>
  
         {/* Messages */}
