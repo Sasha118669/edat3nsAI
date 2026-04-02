@@ -5,9 +5,10 @@ import OpenAI from "openai";
 
 const app = express();
 app.use(express.json());
-app.use(cors());
-console.log("Key:", process.env.GROQ_API_KEY);
-console.log("Key length:", process.env.GROQ_API_KEY?.length);
+app.use(cors({
+  origin: ["http://localhost:5173", "https://https://edat3ns-ai.vercel.app/"]
+}));
+
 const client = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1"
