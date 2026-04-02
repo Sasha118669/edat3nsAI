@@ -59,32 +59,33 @@ export default function App() {
     setIsTyping(true);
  
     try {
-      const res = await fetch("http://localhost:3001/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg }),
-      });
-       const data = await res.json();
+  const res = await fetch("http://localhost:3001/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: msg }),
+  });
 
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === typingMsg.id
-            ? { ...m, text: data.content }
-            : m
-        )
-      );
-    
-  }   catch (error) {
-      console.error("Error sending message:", error);
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === typingMsg.id
-            ? { ...m, text: "Ошибка при получении ответа" }
-            : m
-        )
-      );
-      setIsTyping(false);
-    }
+  const data = await res.json();
+
+  setMessages((prev) =>
+    prev.map((m) =>
+      m.id === typingMsg.id
+        ? { ...m, text: data.content || "Пустой ответ" }
+        : m
+    )
+  );
+} catch (error) {
+  console.error("Fetch error:", error.message);
+  setMessages((prev) =>
+    prev.map((m) =>
+      m.id === typingMsg.id
+        ? { ...m, text: `Ошибка: ${error.message}` }
+        : m
+    )
+  );
+} finally {
+  setIsTyping(false);
+}
   };
  
   const handleKeyDown = (e) => {
