@@ -1,25 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import "./App.css";
  
-const initialMessages = [
-  {
-    id: 1,
-    role: "user",
-    text: "Привет! Как мне использовать async/await для запроса к API?",
-  },
-  {
-    id: 2,
-    role: "ai",
-    text: (
-      <>
-        Для запроса к API с <code>async/await</code> нужно обернуть вызов{" "}
-        <code>fetch</code> в асинхронную функцию и дождаться ответа через{" "}
-        <code>await</code>. Это делает код линейным и читаемым — без цепочек{" "}
-        <code>.then()</code>.
-      </>
-    ),
-  }
-];
+const initialMessages = [];
  
 const recentChats = [
   { id: 1, title: "AI Chat UI project", active: true }
@@ -149,19 +131,25 @@ export default function App() {
  
         {/* Messages */}
         <div className="messages">
-          {messages.map((msg) => (
-            <div key={msg.id} className={`message message--${msg.role}`}>
-              {msg.role === "ai" && (
-                <div className="avatar avatar--ai">AI</div>
-              )}
-              <div className={`bubble bubble--${msg.role}`}>
-                {msg.text === null ? <TypingDots /> : <span>{msg.text}</span>}
-              </div>
-              {msg.role === "user" && (
-                <div className="avatar avatar--user">ВЫ</div>
-              )}
+          {messages.length === 0 ? (
+            <div className="welcome-message">
+              <span>Чем могу помочь?</span>
             </div>
-          ))}
+          ) : (
+            messages.map((msg) => (
+              <div key={msg.id} className={`message message--${msg.role}`}>
+                {msg.role === "ai" && (
+                  <div className="avatar avatar--ai">AI</div>
+                )}
+                <div className={`bubble bubble--${msg.role}`}>
+                  {msg.text === null ? <TypingDots /> : <span>{msg.text}</span>}
+                </div>
+                {msg.role === "user" && (
+                  <div className="avatar avatar--user">ВЫ</div>
+                )}
+              </div>
+            ))
+          )}
           <div ref={messagesEndRef} />
         </div>
  
