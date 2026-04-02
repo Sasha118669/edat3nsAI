@@ -6,7 +6,7 @@ import OpenAI from "openai";
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: ["http://localhost:5173", "https://edat3ns-ai.vercel.app/"]
+  origin: ["http://localhost:5173", "https://edat3ns-ai.vercel.app"]
 }));
 
 const client = new OpenAI({
