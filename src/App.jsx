@@ -3,10 +3,6 @@ import "./App.css";
  
 const initialMessages = [];
  
-const recentChats = [
-  { id: 1, title: "AI Chat UI project", active: true }
-];
- 
 const suggestions = ["Объясни подробнее", "Покажи пример"];
  
 function TypingDots() {
@@ -72,20 +68,41 @@ export default function App() {
   };
   const createNewChat = async () => {
   if (messages.length > 0) {
-    const newChat = {
-      id: String(Date.now()),
-      title: messages[0].text.slice(0, 20) || "New Chat",
-      messages: messages,
-    };
+    const activeChat = recentChats.find((c) => c.active);
 
-    await fetch('https://edat3nsai.onrender.com/chats', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newChat),
-    });
+    if (activeChat) {
+      await fetch(`https://edat3nsai.onrender.com/chats/${activeChat.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: activeChat.title || messages[0].text.slice(0, 20) || "New Chat",
+          messages,
+        }),
+      });
 
-    setRecentChats(prev => [newChat, ...prev]);
+      setRecentChats((prev) =>
+        prev.map((c) =>
+          c.id === activeChat.id ? { ...c, messages, title: c.title || messages[0].text.slice(0, 20) } : c
+        )
+      );
+    } else {
+      const newChat = {
+        id: String(Date.now()),
+        title: messages[0].text.slice(0, 20) || "New Chat",
+        messages,
+      };
+
+      await fetch('https://edat3nsai.onrender.com/chats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newChat),
+      });
+
+      setRecentChats((prev) => [newChat, ...prev]);
+    }
   }
+
+  setRecentChats((prev) => prev.map((c) => ({ ...c, active: false })));
   setMessages([]);
 };
 
@@ -94,6 +111,14 @@ useEffect(() => {
     .then(r => r.json())
     .then(data => setRecentChats(data));
 }, []);
+
+  const loadChat = (chat) => {
+    setMessages(chat.messages || []);
+    setSidebarOpen(false);
+    setRecentChats((prev) =>
+      prev.map((c) => ({ ...c, active: c.id === chat.id }))
+    );
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -136,6 +161,7 @@ useEffect(() => {
             <button
               key={chat.id}
               className={`chat-item ${chat.active ? "chat-item--active" : ""}`}
+              onClick={() => loadChat(chat)}
             >
               {chat.title}
             </button>

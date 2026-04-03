@@ -16,10 +16,7 @@ const client = new OpenAI({
   baseURL: "https://api.groq.com/openai/v1"
 });
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
+mongoose.connect(process.env.MONGO_URI);
 
 app.post("/chat", async (req, res) => {
   const { message } = req.body;
