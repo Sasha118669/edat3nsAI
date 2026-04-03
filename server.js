@@ -2,6 +2,8 @@ import express from "express";
 import "dotenv/config";
 import cors from "cors";
 import OpenAI from "openai";
+import mongoose from "mongoose";
+
 
 const app = express();
 app.use(express.json());
@@ -12,6 +14,11 @@ app.use(cors({
 const client = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1"
+});
+
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 });
 
 app.post("/chat", async (req, res) => {
@@ -32,6 +39,34 @@ app.post("/chat", async (req, res) => {
     console.error("Groq error:", error.message);
     res.status(500).json({ content: error.message });
   }
+});
+
+
+const chatSchema = new mongoose.Schema({
+  id: String,
+  title: String,
+  messages: [{ role: String, text: String, timestamp: Date }],
+}, { timestamps: true });
+
+const Chat = mongoose.model("Chat", chatSchema);
+
+app.get('/chats', async (req, res) => {
+  const chats = await Chat.find().sort({ createdAt: -1 });
+  res.json(chats);
+});
+
+app.post('/chats', async (req, res) => {
+  const chat = await Chat.create(req.body);
+  res.json(chat);
+});
+
+app.put('/chats/:id', async (req, res) => {
+  const chat = await Chat.findOneAndUpdate(
+    { id: req.params.id },
+    req.body,
+    { new: true }
+  );
+  res.json(chat);
 });
 
 app.listen(3001, () => console.log("Server is running on port 3001"));

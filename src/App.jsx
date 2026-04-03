@@ -20,6 +20,7 @@ function TypingDots() {
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [messages, setMessages] = useState(initialMessages);
+    const [recentChats, setRecentChats] = useState([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(true);
   const messagesEndRef = useRef(null);
@@ -69,7 +70,31 @@ export default function App() {
   setIsTyping(false);
 }
   };
- 
+  const createNewChat = async () => {
+  if (messages.length > 0) {
+    const newChat = {
+      id: String(Date.now()),
+      title: messages[0].text.slice(0, 20) || "New Chat",
+      messages: messages,
+    };
+
+    await fetch('https://edat3nsai.onrender.com/chats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newChat),
+    });
+
+    setRecentChats(prev => [newChat, ...prev]);
+  }
+  setMessages([]);
+};
+
+useEffect(() => {
+  fetch('https://edat3nsai.onrender.com/chats')
+    .then(r => r.json())
+    .then(data => setRecentChats(data));
+}, []);
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -100,7 +125,7 @@ export default function App() {
           </div>
         </div>
  
-        <button className="new-chat-btn">
+        <button className="new-chat-btn" onClick = {createNewChat}>
           <span className="new-chat-icon">+</span>
           <span>New chat</span>
         </button>
